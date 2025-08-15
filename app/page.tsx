@@ -1,103 +1,256 @@
-import Image from "next/image";
+"use client"
+
+import React, { useEffect, useState } from "react"
+import { useForm, SubmitHandler } from "react-hook-form"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Eye, EyeOff, Zap } from "lucide-react"
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast, Toaster } from "sonner"
+import { useDispatch, useSelector } from "react-redux"
+import { setJwtToken } from "@/Store/state/SetJWT"
+import { redirect } from "next/navigation"
+
+import { setCredential } from "@/redux/features/auth/auth.slice"
+import { RootState } from "@/redux/store"
+import { useAuthLoginMutation, useAuthRegisterMutation } from "@/redux/features/auth/authApi"
+
+type Theme = {
+  name: string
+  icon: React.ComponentType<{ className?: string }>
+  bg: string
+  cardBg: string
+  text: string
+  accent: string
+  border: string
+  button: string
+  input: string
+  themeButton: string
+}
+
+const theme: Theme = {
+  name: "Cyberpunk",
+  icon: Zap,
+  bg: "bg-gray-900",
+  cardBg: "bg-black",
+  text: "text-green-400",
+  accent: "text-cyan-400",
+  border: "border-green-400",
+  button: "bg-green-400 text-black hover:bg-green-300",
+  input: "border-green-400 bg-black text-green-400 focus:ring-green-400",
+  themeButton: "bg-gray-800 hover:bg-gray-700 text-green-400",
+}
+
+interface FormData {
+  email: string
+  password: string
+  role?: string
+  confirmPassword?: string
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isLogin, setIsLogin] = useState(true)
+  const [showPassword, setShowPassword] = useState(false)
+  const [registerUser, { isLoading: isRegisterLoading }] = useAuthRegisterMutation();
+  const [loginUser, { isLoading: isLoginLoading }] = useAuthLoginMutation()
+  const dispatch = useDispatch()
+  const token = useSelector((state: RootState) => state.lmsAuth.token)
+  const [role, setRole] = useState("")
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
+    defaultValues: {
+      role: "user",
+    },
+  })
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  // // useEffect(() => {
+  //   const storedToken = localStorage.getItem("jwt");
+    // if (storedToken && !token) {
+    //   dispatch(setCredential(storedToken));
+    // }
+  // }, [dispatch, token]);
+
+
+
+
+  useEffect(() => {
+    if (token || token !== null && role === "admin") {
+      redirect("/admin/courses");
+    }else if (token && role === "user") {
+      redirect("/user-dashboard");
+    }
+  }, [token, role]);
+
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    console.log("Form submitted:", { isLogin, ...data })
+    if (isLogin) {
+      try {
+        const response = await loginUser({ email: data.email, password: data.password }).unwrap();
+        console.log("Login successful:", response);
+        if (response?.success) {
+          dispatch(setCredential({user: response.user, token: response.token}));
+          // localStorage.setItem("jwt", response.token);
+        }
+        toast.success("Login successful!");
+        if(response?.user?.role === "admin") {
+         setRole(response?.user?.role)
+        } 
+      } catch (error) {
+        console.error("Login failed:", error);
+        toast.error("Login failed. Please check your credentials.");
+      }
+    } else {
+      try {
+        const response = await registerUser({ email: data.email, password: data.password, role: data.role }).unwrap();
+        console.log("Signup successful:", response);
+        toast.success("Signup successful!");
+        reset();
+        setIsLogin((prev) => !prev)
+      } catch (error) {
+        console.error("Signup failed:", error);
+        toast.error("Signup failed. Please try again.");
+      }
+    }
+  }
+
+  const toggleMode = () => {
+    setIsLogin((prev) => !prev)
+    reset() // Reset form when toggling between login and signup
+  }
+
+  return (
+    <div className={`min-h-screen transition-all duration-500 ease-in-out ${theme.bg} ${theme.text} font-mono`}>
+      {/* Main Content */}
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <Card
+          className={`w-full max-w-md ${theme.cardBg} ${theme.border} border-2 transition-all duration-500 ease-in-out transform`}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <CardHeader className="text-center">
+            <CardTitle className={`text-2xl font-bold ${theme.text} transition-colors duration-300`}>
+              {isLogin ? "LOGIN" : "SIGNUP"}
+            </CardTitle>
+            <CardDescription className={`${theme.accent} transition-colors duration-300`}>
+              {isLogin ? "Access your account" : "Create new account"}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {!isLogin && (
+                <div className="space-y-2 animate-in slide-in-from-top duration-300">
+                  <Label htmlFor="role" className={theme.text}>
+                    ROLE
+                  </Label>
+                  <Select
+                    defaultValue="user"
+                    {...register("role", { required: !isLogin })}
+                  >
+                    <SelectTrigger className={`${theme.input} transition-all duration-300 focus:scale-105`}>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent className={`${theme.cardBg} ${theme.border} ${theme.text}`}>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="user">User</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.role && <p className="text-red-500 text-sm">Role is required</p>}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className={theme.text}>
+                  EMAIL
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email", { required: true })}
+                  className={`${theme.input} transition-all duration-300 focus:scale-105`}
+                  placeholder="Enter email"
+                />
+                {errors.email && <p className="text-red-500 text-sm">Email is required</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className={theme.text}>
+                  PASSWORD
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    {...register("password", { required: true })}
+                    className={`${theme.input} pr-10 transition-all duration-300 focus:scale-105`}
+                    placeholder="Enter password"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className={`absolute right-0 top-0 h-full px-3 ${theme.text} hover:bg-transparent`}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {errors.password && <p className="text-red-500 text-sm">Password is required</p>}
+              </div>
+
+              {!isLogin && (
+                <div className="space-y-2 animate-in slide-in-from-top duration-300">
+                  <Label htmlFor="confirmPassword" className={theme.text}>
+                    CONFIRM PASSWORD
+                  </Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    {...register("confirmPassword", { 
+                      required: !isLogin,
+                      validate: (val: string | undefined) => {
+                        if (watch('password') !== val) {
+                          return "Passwords do not match";
+                        }
+                      },
+                    })}
+                    className={`${theme.input} transition-all duration-300 focus:scale-105`}
+                    placeholder="Confirm password"
+                  />
+                  {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword.message || "Confirm Password is required"}</p>}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className={`w-full ${theme.button} transition-all duration-300 hover:scale-105 active:scale-95`}
+                disabled={isLoginLoading || isRegisterLoading}
+              >
+                {isLogin ? "LOGIN" : "CREATE ACCOUNT"}
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <Button
+                variant="ghost"
+                onClick={toggleMode}
+                className={`${theme.text} hover:bg-transparent transition-all duration-300 hover:scale-105`}
+              >
+                {isLogin ? "Don't have an account? SIGNUP" : "Already have an account? LOGIN"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className={`absolute top-10 left-10 w-4 h-4 ${theme.border} border-2 animate-pulse`} />
+        <div className={`absolute top-20 right-20 w-6 h-6 ${theme.border} border-2 animate-bounce`} />
+        <div className={`absolute bottom-20 left-20 w-3 h-3 ${theme.border} border-2 animate-ping`} />
+        <div className={`absolute bottom-10 right-10 w-5 h-5 ${theme.border} border-2 animate-pulse`} />
+      </div>
+      <Toaster richColors/>
     </div>
-  );
+  )
 }
