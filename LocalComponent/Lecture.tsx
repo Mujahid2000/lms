@@ -20,9 +20,10 @@ type Inputs = {
 interface LectureFormProps {
   moduleId: string;
   initialData?: Lecture; // Made optional to handle cases where initialData might be undefined
+  onSuccess?: () => void;
 }
 
-export default function LectureForm({ moduleId, initialData }: LectureFormProps) {
+export default function LectureForm({ moduleId, initialData, onSuccess }: LectureFormProps) {
   const [createLecture] = useCreateLectureMutation();
   const [updateLecture] = useUpdateLectureMutation(); // Remove moduleId from here; the hook doesn't accept arguments
   const [isFormVisible, setIsFormVisible] = useState(true);
@@ -49,6 +50,7 @@ export default function LectureForm({ moduleId, initialData }: LectureFormProps)
         videoUrl: initialData.videoUrl || "",
         notes: undefined,
       });
+      onSuccess?.();
     } else {
       setEditMode(false);
       reset({
@@ -58,6 +60,7 @@ export default function LectureForm({ moduleId, initialData }: LectureFormProps)
         videoUrl: "",
         notes: undefined,
       });
+      onSuccess?.();
     }
   }, [initialData, reset, moduleId]);
 
