@@ -14,7 +14,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const token = useSelector((state: RootState) => state.lmsAuth.token);
-  
+  const role = useSelector((state: RootState) => state.lmsAuth.user?.role)
   
 useEffect(() =>{
   if(!token){
@@ -46,8 +46,8 @@ useEffect(() =>{
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">LMS Admin Dashboard</h1>
-              <p className="text-sm text-gray-600">Welcome back, Admin</p>
+              <h1 className="text-2xl font-bold text-gray-900">LMS {role} Dashboard</h1>
+              <p className="text-sm text-gray-600">Welcome back, {role}</p>
             </div>
             {/* Desktop Navigation (visible on md: 768px and above) */}
             <nav className="hidden md:flex items-center gap-4">
