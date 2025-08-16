@@ -21,15 +21,15 @@ export default function CourseList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.lmsAuth.token)
-  const role = useSelector((state: RootState) => state.lmsAuth.user?.role)
+  // const role = useSelector((state: RootState) => state.lmsAuth.user?.role)
 
-    useEffect(() => {
-        if(token && role === 'admin') {
-          redirect("/admin/courses");
-        } else{
-          redirect("/user-dashboard")
-        }
-      }, [token, role]);
+ useEffect(() => {
+    if(!token) {
+      redirect("/");
+    } else{
+      
+    }
+  }, [token]);
 
   useEffect(() => {
     async function getData() {
