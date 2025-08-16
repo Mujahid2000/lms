@@ -104,7 +104,7 @@ export function CourseDetails({id}: {id: string}) {
 
   useEffect(() => {
     async function fetchData() {
-      const url = `http://localhost:4000/api/courses/${id}`;
+      const url = `https://learnig-management-server.vercel.app/api/courses/${id}`;
       try {
         setIsLoading(true);
         const response = await fetch(url, { cache: "no-store" });

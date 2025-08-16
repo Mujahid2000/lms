@@ -20,7 +20,7 @@ export default function CourseList() {
 
   useEffect(() => {
     async function getData() {
-      const url = 'http://localhost:4000/api/courses';
+      const url = 'https://learnig-management-server.vercel.app/api/courses';
       try {
         setIsLoading(true);
         const response = await fetch(url, { cache: 'no-store' });

@@ -1,6 +1,6 @@
 "use client"
 
-import React, {  useState } from "react"
+import React, {  useEffect, useState } from "react"
 import { useForm, SubmitHandler } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,7 @@ import { Eye, EyeOff, Zap } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast, Toaster } from "sonner"
 import { useDispatch, useSelector } from "react-redux"
-import {  useRouter } from "next/navigation"
+import {  redirect, useRouter } from "next/navigation"
 
 import { setCredential } from "@/redux/features/auth/auth.slice"
 import { RootState } from "@/redux/store"
@@ -57,12 +57,24 @@ export default function Home() {
   const [loginUser, { isLoading: isLoginLoading }] = useAuthLoginMutation()
   const dispatch = useDispatch()
   const token = useSelector((state: RootState) => state.lmsAuth.token)
+  const role = useSelector((state: RootState) => state.lmsAuth.user?.role)
   const router = useRouter()
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
     defaultValues: {
       role: "user",
     },
   })
+
+  // const token = useSelector((state: RootState) => state.lmsAuth.token)
+  
+  
+    useEffect(() => {
+      if(token && role == 'admin') {
+        redirect("/admin/courses");
+      } else{
+        redirect("/user-dashboard")
+      }
+    }, [token]);
 
 
 
