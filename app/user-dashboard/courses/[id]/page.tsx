@@ -9,7 +9,7 @@ import React from 'react';
 const Page = () => {
     const params = useParams();
     const id = params.id as string;
-    console.log(id)
+    // console.log(id)
     return (
         <main className="min-h-screen bg-background">
            <Navbar/>
