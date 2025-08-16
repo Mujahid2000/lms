@@ -62,7 +62,7 @@ export default function ModuleLectureManagement() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const params = useParams();
   const id = params.id as string;
-  const { data: modules = [], isLoading: modulesLoading } = useGetModuleByIdQuery(id);
+  const { data: modules = [], isLoading: modulesLoading, refetch } = useGetModuleByIdQuery(id);
   const [deleteLecture, { isLoading: isDeleting, isSuccess, isError, error }] = useDeleteLectureMutation();
   const token = useSelector((state: RootState) => state.lmsAuth.token);
 
@@ -76,6 +76,7 @@ export default function ModuleLectureManagement() {
     try {
       await deleteLecture(lectureId).unwrap();
       toast.success("Lecture deleted successfully!");
+      refetch()
     } catch (err) {
       console.error("Error deleting lecture:", err);
       toast.error("Failed to delete lecture. Please try again.");
