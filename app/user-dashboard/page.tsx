@@ -2,8 +2,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Navbar from '@/Layout/Navbar';
+import { RootState } from '@/redux/store';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 interface Course {
   _id: string;
@@ -17,6 +20,16 @@ export default function CourseList() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const token = useSelector((state: RootState) => state.lmsAuth.token)
+  const role = useSelector((state: RootState) => state.lmsAuth.user?.role)
+
+    useEffect(() => {
+        if(token && role == 'admin') {
+          redirect("/admin/courses");
+        } else{
+          redirect("/user-dashboard")
+        }
+      }, [token, role]);
 
   useEffect(() => {
     async function getData() {
