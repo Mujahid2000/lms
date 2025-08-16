@@ -3,10 +3,11 @@ import { Lecture } from "@/app/admin/courses/[id]/page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCreateLectureMutation, useUpdateLectureMutation } from "@/Store/api/LectureApi";
+
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, Toaster } from "sonner";
 import { useEffect, useState } from "react";
+import { useCreateLectureMutation, useUpdateLectureMutation } from "@/redux/features/lecture/lecture";
 
 type Inputs = {
   moduleId: string;

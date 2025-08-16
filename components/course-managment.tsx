@@ -17,7 +17,7 @@ import CourseForm from './CourseForm';
 import { useState } from 'react';
 import Link from 'next/link';
 
-import { BookOpen, Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { Course, useDeleteCourseMutation, useGetCoursesQuery } from '@/redux/features/course/course';
 
 export function CourseManagement() {
@@ -102,7 +102,7 @@ export function CourseManagement() {
             <p className="text-gray-600 text-sm">Total Courses</p>
           </CardContent>
         </Card>
-        <Card className="shadow-sm">
+        {/* <Card className="shadow-sm">
           <CardContent className="p-4">
             <div className="text-2xl font-bold">
               {courses.filter((c) => c.status === 'published').length}
@@ -125,7 +125,7 @@ export function CourseManagement() {
             </div>
             <p className="text-gray-600 text-sm">Total Students</p>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Course Cards */}

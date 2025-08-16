@@ -1,5 +1,6 @@
 'use client'
 import { Button } from '@/components/ui/button';
+import Navbar from '@/Layout/Navbar';
 import { CourseDetails } from '@/LocalComponent/CourseDetails';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -11,13 +12,10 @@ const Page = () => {
     console.log(id)
     return (
         <main className="min-h-screen bg-background">
-      <div className="fixed top-4 right-4 z-50 flex gap-2">
-        {/* <Button asChild variant="outline">
-          <Link href="/">Course Details</Link>
-        </Button> */}
-        <Button>
-          <Link href={`/lecture/video/${id}`}>Lecture Page</Link>
-        </Button>
+           <Navbar/>
+      <div className="fixed top-25 right-4 z-50 flex gap-2">
+       
+        
       </div>
       <CourseDetails id={id}/>
     </main>

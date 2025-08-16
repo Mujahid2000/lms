@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Search,
   ChevronDown,
@@ -11,403 +11,244 @@ import {
   ThumbsDown,
   Download,
   CheckCircle,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Progress } from "@/components/ui/progress"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { LectureDataResponse, useUpdateLectureStatusMutation } from "@/redux/features/lecture/lecture";
+import { Root2, useGetModuleByIdQuery } from "@/redux/features/module/module";
 
 interface Lecture {
-  id: string
-  title: string
-  duration: string
-  videoUrl: string
-  pdfNotes: string[]
-  isCompleted: boolean
-  isUnlocked: boolean
+  _id: string;
+  title: string;
+  duration: number; // In seconds from API
+  videoUrl: string;
+  notes: string[];
+  isCompleted: boolean;
+  isUnlocked: boolean;
+  order?: number; // Optional field from API
 }
 
 interface Module {
-  id: string
-  title: string
-  lectures: Lecture[]
-  totalDuration: string
-  completedCount: number
-  totalCount: number
+  _id: string;
+  title: string;
+  lectures: Lecture[];
+  totalDuration?: number; // Changed from string to number to match calculated value
+  completedCount?: number; // Calculated
+  totalCount?: number; // Calculated
 }
 
-export default function LecturePage({courseId}:{courseId: string}) {
-  const [currentLecture, setCurrentLecture] = useState<Lecture | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set(["module-1"]))
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(970) // 16:10 in seconds
+export default function LecturePage({ courseId }: { courseId: string }) {
+  const [currentLecture, setCurrentLecture] = useState<Lecture | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set(["689f6a8244172477d16a9b89"]));
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [updateStatus] = useUpdateLectureStatusMutation();
+  const { data: modulesData = [], isLoading: modulesLoading, error, refetch } = useGetModuleByIdQuery(courseId);
 
-  // Sample data - replace with your actual data
-  const [modules, setModules] = useState<Module[]>([
-    {
-      id: "module-1",
-      title: "MODULE 01 - INTRODUCTION TO BASICS",
-      totalDuration: "2h 15m",
-      completedCount: 1,
-      totalCount: 4,
-      lectures: [
-        {
-          id: "lecture-1-1",
-          title: "Getting Started - Course Overview",
-          duration: "16:10",
-          videoUrl: "https://res.cloudinary.com/dkffqpque/video/upload/v1755274997/--_--_soul_life_o1_songstatus_lyricedits_songreels_explorereels_lovesongreels_lyricsvideo_lovestatus_songforyou_online-video-cutter.com_gwop6h.mp4",
-          pdfNotes: ["Course Overview.pdf", "Getting Started Guide.pdf"],
-          isCompleted: false,
-          isUnlocked: true,
-        },
-        {
-          id: "lecture-1-2",
-          title: "Setting Up Your Environment",
-          duration: "22:30",
-          videoUrl: "https://www.youtube.com/embed/9bZkp7q19f0",
-          pdfNotes: ["Environment Setup.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-1-3",
-          title: "Basic Concepts and Terminology",
-          duration: "18:45",
-          videoUrl: "https://www.youtube.com/embed/kJQP7kiw5Fk",
-          pdfNotes: ["Basic Concepts.pdf", "Terminology Guide.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-1-4",
-          title: "Your First Project",
-          duration: "25:20",
-          videoUrl: "https://www.youtube.com/embed/L_LUpnjgPso",
-          pdfNotes: ["First Project Guide.pdf", "Project Template.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-      ],
-    },
-    {
-      id: "module-2",
-      title: "MODULE 02 - INTERMEDIATE CONCEPTS",
-      totalDuration: "1h 54m",
-      completedCount: 0,
-      totalCount: 5,
-      lectures: [
-        {
-          id: "lecture-2-1",
-          title: "Advanced Techniques",
-          duration: "20:15",
-          videoUrl: "https://www.youtube.com/embed/fJ9rUzIMcZQ",
-          pdfNotes: ["Advanced Techniques.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-2-2",
-          title: "Working with Data",
-          duration: "24:30",
-          videoUrl: "https://www.youtube.com/embed/Ks-_Mh1QhMc",
-          pdfNotes: ["Data Handling.pdf", "Best Practices.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-2-3",
-          title: "Error Handling and Debugging",
-          duration: "19:45",
-          videoUrl: "https://www.youtube.com/embed/YQHsXMglC9A",
-          pdfNotes: ["Debugging Guide.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-2-4",
-          title: "Performance Optimization",
-          duration: "26:10",
-          videoUrl: "https://www.youtube.com/embed/oHg5SJYRHA0",
-          pdfNotes: ["Performance Tips.pdf", "Optimization Checklist.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-2-5",
-          title: "Testing Your Code",
-          duration: "23:40",
-          videoUrl: "https://www.youtube.com/embed/RGOj5yH7evk",
-          pdfNotes: ["Testing Guide.pdf", "Test Examples.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-      ],
-    },
-    {
-      id: "module-3",
-      title: "MODULE 03 - ADVANCED TOPICS",
-      totalDuration: "2h 16m",
-      completedCount: 0,
-      totalCount: 6,
-      lectures: [
-        {
-          id: "lecture-3-1",
-          title: "Architecture Patterns",
-          duration: "28:15",
-          videoUrl: "https://www.youtube.com/embed/FTSuUnpKxdQ",
-          pdfNotes: ["Architecture Patterns.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-3-2",
-          title: "Security Best Practices",
-          duration: "22:30",
-          videoUrl: "https://www.youtube.com/embed/3klLJceIN7s",
-          pdfNotes: ["Security Guide.pdf", "Common Vulnerabilities.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-3-3",
-          title: "Scalability Considerations",
-          duration: "25:45",
-          videoUrl: "https://www.youtube.com/embed/kpzQrFC55q4",
-          pdfNotes: ["Scalability Guide.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-3-4",
-          title: "Integration with External APIs",
-          duration: "21:20",
-          videoUrl: "https://www.youtube.com/embed/GJzFKDLRfss",
-          pdfNotes: ["API Integration.pdf", "Authentication Methods.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-3-5",
-          title: "Deployment Strategies",
-          duration: "19:30",
-          videoUrl: "https://www.youtube.com/embed/Tng6Fox8EfI",
-          pdfNotes: ["Deployment Guide.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-3-6",
-          title: "Monitoring and Maintenance",
-          duration: "18:45",
-          videoUrl: "https://www.youtube.com/embed/BxV14h0kFs0",
-          pdfNotes: ["Monitoring Setup.pdf", "Maintenance Checklist.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-      ],
-    },
-    {
-      id: "module-4",
-      title: "MODULE 04 - REAL WORLD PROJECTS",
-      totalDuration: "1h 58m",
-      completedCount: 0,
-      totalCount: 4,
-      lectures: [
-        {
-          id: "lecture-4-1",
-          title: "Project Planning and Setup",
-          duration: "30:15",
-          videoUrl: "https://www.youtube.com/embed/SWYqp7iY_Tc",
-          pdfNotes: ["Project Planning.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-4-2",
-          title: "Building the Core Features",
-          duration: "35:20",
-          videoUrl: "https://www.youtube.com/embed/rAb3NuudUlY",
-          pdfNotes: ["Core Features.pdf", "Implementation Guide.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-4-3",
-          title: "Adding Advanced Features",
-          duration: "28:45",
-          videoUrl: "https://www.youtube.com/embed/QH2-TGUlwu4",
-          pdfNotes: ["Advanced Features.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-4-4",
-          title: "Final Testing and Deployment",
-          duration: "23:40",
-          videoUrl: "https://www.youtube.com/embed/nfWlot6h_JM",
-          pdfNotes: ["Testing Checklist.pdf", "Deployment Guide.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-      ],
-    },
-    {
-      id: "module-5",
-      title: "MODULE 05 - BONUS CONTENT",
-      totalDuration: "1h 8m",
-      completedCount: 0,
-      totalCount: 3,
-      lectures: [
-        {
-          id: "lecture-5-1",
-          title: "Industry Best Practices",
-          duration: "24:30",
-          videoUrl: "https://www.youtube.com/embed/Taylor_Swift",
-          pdfNotes: ["Industry Standards.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-5-2",
-          title: "Career Development Tips",
-          duration: "22:15",
-          videoUrl: "https://www.youtube.com/embed/career_tips",
-          pdfNotes: ["Career Guide.pdf", "Resume Tips.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-        {
-          id: "lecture-5-3",
-          title: "What's Next - Advanced Learning",
-          duration: "21:45",
-          videoUrl: "https://www.youtube.com/embed/next_steps",
-          pdfNotes: ["Learning Path.pdf", "Resources.pdf"],
-          isCompleted: false,
-          isUnlocked: false,
-        },
-      ],
-    },
-  ])
+  // Sync modules with API data
+  useEffect(() => {
+    if (modulesData.length > 0) {
+      const transformedModules = modulesData.map((module: Root2) => ({
+        _id: module._id,
+        title: module.title,
+        lectures: module.lectures.map((lecture) => ({
+          _id: lecture._id,
+          title: lecture.title,
+          duration: lecture.duration || 0,
+          videoUrl: lecture.videoUrl,
+          notes: lecture.notes || [],
+          isCompleted: lecture.isCompleted,
+          isUnlocked: lecture.isUnlocked,
+          order: lecture.order,
+        })),
+        totalDuration: module.lectures.reduce((acc: number, curr: Lecture) => acc + (curr.duration || 0), 0),
+        completedCount: module.lectures.filter((l: Lecture) => l.isCompleted).length,
+        totalCount: module.lectures.length,
+      }));
+      setModules(transformedModules);
+    }
+  }, [modulesData]);
 
   // Set initial lecture
   useEffect(() => {
-    if (modules[0]?.lectures[0]) {
-      setCurrentLecture(modules[0].lectures[0])
+    if (modules.length > 0 && modules[0].lectures.length > 0 && !currentLecture) {
+      setCurrentLecture(modules[0].lectures[0]);
+      setDuration(modules[0].lectures[0].duration || 0);
     }
-  }, [])
+  }, [modules, currentLecture]);
 
   const toggleModule = (moduleId: string) => {
-    const newExpanded = new Set(expandedModules)
-    if (newExpanded.has(moduleId)) {
-      newExpanded.delete(moduleId)
-    } else {
-      newExpanded.add(moduleId)
-    }
-    setExpandedModules(newExpanded)
-  }
+    setExpandedModules((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(moduleId)) newSet.delete(moduleId);
+      else newSet.add(moduleId);
+      return newSet;
+    });
+  };
 
   const selectLecture = (lecture: Lecture) => {
     if (lecture.isUnlocked) {
-      setCurrentLecture(lecture)
+      setCurrentLecture(lecture);
+      setDuration(lecture.duration || 0);
     }
-  }
+  };
 
-  const markLectureComplete = () => {
-    if (!currentLecture) return
+  const markLectureComplete = async () => {
+    if (!currentLecture) return;
 
-    setModules((prevModules) => {
-      const updatedModules = prevModules.map((module) => {
-        const updatedLectures = module.lectures.map((lecture) =>
-          lecture.id === currentLecture.id ? { ...lecture, isCompleted: true } : lecture,
-        )
+    try {
+      console.log("Sending update (Complete):", {
+        lectureId: currentLecture._id,
+        lecture: {
+          lectureId: currentLecture._id,
+          isCompleted: true,
+          isUnlocked: true,
+        },
+      });
 
-        // Find current lecture and unlock the next one
-        const currentIndex = updatedLectures.findIndex((l) => l.id === currentLecture.id)
-        if (currentIndex !== -1 && currentIndex + 1 < updatedLectures.length) {
-          updatedLectures[currentIndex + 1].isUnlocked = true
+      const response = await updateStatus({
+        lectureId: currentLecture._id,
+        lecture: {
+          lectureId: currentLecture._id,
+          isCompleted: true,
+          isUnlocked: true,
+        },
+      }).unwrap();
+      // check complete or not
+      console.log("Update response (Complete):", response);
+
+      await refetch();
+
+      setModules((prevModules) => {
+        const updatedModules = prevModules.map((module) => {
+          const updatedLectures = module.lectures.map((lecture) =>
+            lecture._id === currentLecture._id
+              ? { ...lecture, isCompleted: true, isUnlocked: true }
+              : lecture
+          );
+          return {
+            ...module,
+            lectures: updatedLectures,
+            completedCount: updatedLectures.filter((l) => l.isCompleted).length,
+          };
+        });
+        return updatedModules;
+      });
+    } catch (err) {
+      console.error("Failed to update lecture status (Complete):", err);
+    }
+  };
+
+  const unlockNextLecture = async () => {
+    if (!currentLecture) return;
+
+    for (const mod of modules) {
+      const currentIndex = mod.lectures.findIndex((l) => l._id === currentLecture._id);
+      if (currentIndex !== -1 && currentIndex + 1 < mod.lectures.length) {
+        const nextLecture = mod.lectures[currentIndex + 1];
+        try {
+          console.log("Sending update (Next):", {
+            lectureId: nextLecture._id,
+            lecture: {
+              lectureId: nextLecture._id,
+              isCompleted: false,
+              isUnlocked: true,
+            },
+          });
+
+          const response = await updateStatus({
+            lectureId: nextLecture._id,
+            lecture: {
+              lectureId: nextLecture._id,
+              isCompleted: false,
+              isUnlocked: true,
+            },
+          }).unwrap();
+          // check unlock or not
+          console.log("Update response (Next):", response);
+
+          await refetch();
+
+          setModules((prevModules) => {
+            const updatedModules = prevModules.map((module) => {
+              const updatedLectures = module.lectures.map((lecture) =>
+                lecture._id === nextLecture._id
+                  ? { ...lecture, isUnlocked: true }
+                  : lecture
+              );
+              return {
+                ...module,
+                lectures: updatedLectures,
+              };
+            });
+            setCurrentLecture(nextLecture);
+            setDuration(nextLecture.duration || 0);
+            return updatedModules;
+          });
+        } catch (err) {
+          console.error("Failed to update lecture status (Next):", err);
         }
-
-        return {
-          ...module,
-          lectures: updatedLectures,
-          completedCount: updatedLectures.filter((l) => l.isCompleted).length,
-        }
-      })
-
-      // Also unlock first lecture of next module if we completed current module
-      const currentModuleIndex = updatedModules.findIndex((module) =>
-        module.lectures.some((l) => l.id === currentLecture.id),
-      )
-
-      if (currentModuleIndex !== -1) {
-        const currentModule = updatedModules[currentModuleIndex]
-        const currentLectureIndex = currentModule.lectures.findIndex((l) => l.id === currentLecture.id)
-
-        // If this was the last lecture in the module, unlock first lecture of next module
-        if (
-          currentLectureIndex === currentModule.lectures.length - 1 &&
-          currentModuleIndex + 1 < updatedModules.length
-        ) {
-          const nextModule = updatedModules[currentModuleIndex + 1]
-          if (nextModule.lectures.length > 0) {
-            nextModule.lectures[0].isUnlocked = true
-          }
-        }
+        return;
       }
+    }
+  };
 
-      // Navigate to next lecture using updated state
-      setTimeout(() => {
-        goToNextLecture(updatedModules)
-      }, 100)
+  const goToPreviousLecture = (updatedModules: Module[]) => {
+    if (!currentLecture) return;
 
-      return updatedModules
-    })
-  }
-
-  const goToNextLecture = (updatedModules: Module[]) => {
-    for (const module of updatedModules) {
-      const currentIndex = module.lectures.findIndex((l) => l.id === currentLecture?.id)
+    for (let i = 0; i < updatedModules.length; i++) {
+      const mod = updatedModules[i];
+      const currentIndex = mod.lectures.findIndex((l) => l._id === currentLecture._id);
       if (currentIndex !== -1) {
-        // Check if there's a next lecture in current module
-        if (currentIndex + 1 < module.lectures.length) {
-          const nextLecture = module.lectures[currentIndex + 1]
-          if (nextLecture.isUnlocked) {
-            setCurrentLecture(nextLecture)
-            return
+        if (currentIndex > 0) {
+          const previousLecture = mod.lectures[currentIndex - 1];
+          if (previousLecture.isUnlocked) {
+            setCurrentLecture(previousLecture);
+            setDuration(previousLecture.duration || 0);
+            return;
+          }
+        } else if (i > 0) {
+          const previousModule = updatedModules[i - 1];
+          const lastLectureIndex = previousModule.lectures.length - 1;
+          const previousLecture = previousModule.lectures[lastLectureIndex];
+          if (previousLecture.isUnlocked) {
+            setCurrentLecture(previousLecture);
+            setDuration(previousLecture.duration || 0);
+            return;
           }
         }
-        // Move to first lecture of next module
-        const moduleIndex = updatedModules.findIndex((m) => m.id === module.id)
-        if (moduleIndex + 1 < updatedModules.length) {
-          const nextModule = updatedModules[moduleIndex + 1]
-          if (nextModule.lectures.length > 0 && nextModule.lectures[0].isUnlocked) {
-            setCurrentLecture(nextModule.lectures[0])
-            return
-          }
-        }
+        break;
       }
     }
-  }
+  };
 
   const filteredModules = modules.map((module) => ({
     ...module,
-    lectures: module.lectures.filter((lecture) => lecture.title.toLowerCase().includes(searchQuery.toLowerCase())),
-  }))
+    lectures: module.lectures.filter((lecture) =>
+      lecture.title.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+  }));
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, "0")}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   const getProgressPercentage = (completed: number, total: number) => {
-    return total > 0 ? (completed / total) * 100 : 0
-  }
+    return total > 0 ? (completed / total) * 100 : 0;
+  };
+
+  if (modulesLoading) return <div className="text-center py-12 text-white">Loading modules...</div>;
+  if (error) return <div className="text-center py-12 text-red-500">Error loading modules</div>;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <div className="flex h-screen">
+      <div className="flex flex-col lg:flex-row h-screen">
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
@@ -453,10 +294,24 @@ export default function LecturePage({courseId}:{courseId: string}) {
                 <Button
                   className="bg-purple-600 hover:bg-purple-700 flex items-center gap-2"
                   onClick={markLectureComplete}
-                  disabled={!currentLecture || currentLecture.isCompleted}
+                  disabled={!currentLecture}
                 >
                   <CheckCircle className="w-4 h-4" />
-                  {currentLecture?.isCompleted ? "Completed" : "Complete Video & Next"}
+                  {currentLecture?.isCompleted ? "Completed" : "Complete Video"}
+                </Button>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+                  onClick={() => goToPreviousLecture(modules)}
+                  disabled={!currentLecture}
+                >
+                  Previous
+                </Button>
+                <Button
+                  className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+                  onClick={unlockNextLecture}
+                  disabled={!currentLecture}
+                >
+                  Next
                 </Button>
               </div>
 
@@ -477,18 +332,18 @@ export default function LecturePage({courseId}:{courseId: string}) {
             </div>
 
             {/* PDF Notes */}
-            {currentLecture?.pdfNotes && (
+            {currentLecture?.notes && currentLecture.notes.length > 0 && (
               <div className="flex gap-2">
-                {currentLecture.pdfNotes.map((note, index) => (
-                  <Button
+                {currentLecture.notes.map((note, index) => (
+                  <a
                     key={index}
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent"
+                    href={note}
+                    target="blank"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent flex items-center"
                   >
                     <Download className="w-3 h-3 mr-1" />
-                    {note}
-                  </Button>
+                    Download Note
+                  </a>
                 ))}
               </div>
             )}
@@ -496,7 +351,7 @@ export default function LecturePage({courseId}:{courseId: string}) {
         </div>
 
         {/* Sidebar */}
-        <div className="w-96 bg-gray-800 border-l border-gray-700 flex flex-col">
+        <div className="w-full lg:w-96 bg-gray-800 border-l border-gray-700 flex flex-col">
           {/* Progress Header */}
           <div className="p-6 border-b border-gray-700">
             <div className="flex items-center justify-between mb-3">
@@ -524,22 +379,22 @@ export default function LecturePage({courseId}:{courseId: string}) {
           {/* Modules List */}
           <div className="flex-1 overflow-y-auto">
             {filteredModules.map((module) => (
-              <div key={module.id} className="border-b border-gray-700">
+              <div key={module._id} className="border-b border-gray-700">
                 <button
-                  onClick={() => toggleModule(module.id)}
+                  onClick={() => toggleModule(module._id)}
                   className="w-full p-4 text-left hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium text-white mb-1">{module.title}</h3>
                       <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <span>{module.totalDuration}</span>
+                        <span>{formatTime(module.totalDuration || 0)}</span>
                         <span>
                           {module.completedCount}/{module.totalCount}
                         </span>
                       </div>
                     </div>
-                    {expandedModules.has(module.id) ? (
+                    {expandedModules.has(module._id) ? (
                       <ChevronUp className="w-4 h-4 text-gray-400" />
                     ) : (
                       <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -549,28 +404,28 @@ export default function LecturePage({courseId}:{courseId: string}) {
                   {/* Progress Bar */}
                   <div className="mt-3">
                     <Progress
-                      value={getProgressPercentage(module.completedCount, module.totalCount)}
+                      value={getProgressPercentage(module.completedCount || 0, module.totalCount || 0)}
                       className="h-1 bg-gray-600"
                     />
                   </div>
                 </button>
 
                 {/* Expanded Lectures */}
-                {expandedModules.has(module.id) && (
+                {expandedModules.has(module._id) && (
                   <div className="bg-gray-750">
                     {module.lectures.map((lecture) => (
                       <button
-                        key={lecture.id}
+                        key={lecture._id}
                         onClick={() => selectLecture(lecture)}
                         disabled={!lecture.isUnlocked}
                         className={`w-full p-3 text-left text-sm transition-colors ${
                           lecture.isUnlocked ? "hover:bg-gray-600 cursor-pointer" : "opacity-50 cursor-not-allowed"
-                        } ${currentLecture?.id === lecture.id ? "bg-purple-600/20 border-r-2 border-purple-500" : ""}`}
+                        } ${currentLecture?._id === lecture._id ? "bg-purple-600/20 border-r-2 border-purple-500" : ""}`}
                       >
                         <div className="flex items-center justify-between">
                           <span className={lecture.isUnlocked ? "text-white" : "text-gray-500"}>{lecture.title}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400">{lecture.duration}</span>
+                            <span className="text-xs text-gray-400">{formatTime(lecture.duration || 0)}</span>
                             {lecture.isCompleted && <div className="w-2 h-2 bg-green-500 rounded-full"></div>}
                             {!lecture.isUnlocked && <div className="w-2 h-2 bg-gray-500 rounded-full"></div>}
                           </div>
@@ -585,5 +440,5 @@ export default function LecturePage({courseId}:{courseId: string}) {
         </div>
       </div>
     </div>
-  )
+  );
 }

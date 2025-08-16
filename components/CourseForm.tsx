@@ -4,8 +4,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useCreateCourseMutation, useUpdateCourseMutation, Course } from '@/Store/api/CoursesApi';
+
 import { useState } from 'react';
+import { Course, useCreateCourseMutation, useUpdateCourseMutation } from '@/redux/features/course/course';
 
 interface CourseFormProps {
   initialData?: Partial<Course>;

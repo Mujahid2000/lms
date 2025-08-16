@@ -18,12 +18,12 @@ interface IRefreshResponse {
 const mutex = new Mutex();
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:4000/api',
+  baseUrl: 'https://learnig-management-server.vercel.app/api',
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).lmsAuth.token;
     if (token) {
-      headers.set('authorization', `Bearer ${token}`);
+      headers.set('authorization', `${token}`);
     }
     return headers;
   },
@@ -49,7 +49,7 @@ const baseQueryWithReauth: typeof baseQuery = async (
         // console.log('🔁 Attempting token refresh...');
 
         const refreshResult = await baseQuery(
-          { url: '/users/refresh-token', method: 'POST' },
+          { url: '/auth/refresh-token', method: 'POST' },
           api,
           extraOptions,
         );

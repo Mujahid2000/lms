@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, {  useState } from "react"
 import { useForm, SubmitHandler } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,8 +11,7 @@ import { Eye, EyeOff, Zap } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast, Toaster } from "sonner"
 import { useDispatch, useSelector } from "react-redux"
-import { setJwtToken } from "@/Store/state/SetJWT"
-import { redirect } from "next/navigation"
+import {  useRouter } from "next/navigation"
 
 import { setCredential } from "@/redux/features/auth/auth.slice"
 import { RootState } from "@/redux/store"
@@ -58,30 +57,14 @@ export default function Home() {
   const [loginUser, { isLoading: isLoginLoading }] = useAuthLoginMutation()
   const dispatch = useDispatch()
   const token = useSelector((state: RootState) => state.lmsAuth.token)
-  const [role, setRole] = useState("")
+  const router = useRouter()
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
     defaultValues: {
       role: "user",
     },
   })
 
-  // // useEffect(() => {
-  //   const storedToken = localStorage.getItem("jwt");
-    // if (storedToken && !token) {
-    //   dispatch(setCredential(storedToken));
-    // }
-  // }, [dispatch, token]);
 
-
-
-
-  useEffect(() => {
-    if (token || token !== null && role === "admin") {
-      redirect("/admin/courses");
-    }else if (token && role === "user") {
-      redirect("/user-dashboard");
-    }
-  }, [token, role]);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     console.log("Form submitted:", { isLogin, ...data })
@@ -91,12 +74,14 @@ export default function Home() {
         console.log("Login successful:", response);
         if (response?.success) {
           dispatch(setCredential({user: response.user, token: response.token}));
-          // localStorage.setItem("jwt", response.token);
+          
         }
         toast.success("Login successful!");
-        if(response?.user?.role === "admin") {
-         setRole(response?.user?.role)
-        } 
+        if(response.token  && response?.user?.role === "admin") {
+        router.push("/admin/courses");
+        } else{
+         router.push("/user-dashboard");
+        }
       } catch (error) {
         console.error("Login failed:", error);
         toast.error("Login failed. Please check your credentials.");

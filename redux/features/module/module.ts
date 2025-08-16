@@ -30,8 +30,10 @@ export interface Lecture {
   duration: number
   videoUrl: string
   isPreview: boolean
+  isCompleted: boolean,
+  isUnlocked: boolean,
+  order: number,
   notes: string[]
-  order: number
   createdAt: string
   updatedAt: string
   __v: number
@@ -70,7 +72,7 @@ export const moduleApi = baseApi.injectEndpoints({
     // CREATE
     createModule: builder.mutation<ModuleResponse, ModuleData>({
       query: (data) => ({
-        url: `/api/modules`,
+        url: `/modules`,
         method: "POST",
         body: data,
       }),
@@ -79,13 +81,13 @@ export const moduleApi = baseApi.injectEndpoints({
 
     // READ (all modules for a course)
     getModulesByCourse: builder.query<ModuleAndCourseCombineResponse[], string | undefined>({
-      query: (courseId) => `/api/modules/${courseId}`,
+      query: (courseId) => `/modules/${courseId}`,
       providesTags: ["Module"],
     }),
 
     // READ (single module)
     getModuleById: builder.query<ModuleResponse, string>({
-      query: (id) => `/api/modules/${id}`,
+      query: (id) => `/modules/${id}`,
       providesTags: ["Module"],
     }),
 

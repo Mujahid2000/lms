@@ -21,7 +21,16 @@ export interface LectureDataResponse {
   notes: string;
   createdAt: string;
   updatedAt: string;
+  isCompleted: boolean,
+  isUnlocked: boolean,
+  order: number,
   __v: number;
+}
+
+export interface lectureStatusUpdateByUser {
+  lectureId: string,
+  isCompleted: boolean
+  isUnlocked: boolean
 }
 
 export const lectureApi = baseApi.injectEndpoints({
@@ -58,6 +67,14 @@ export const lectureApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Lecture'],
     }),
+    updateLectureStatus: builder.mutation<lectureStatusUpdateByUser, { lectureId: string; lecture: {lectureId: string, isCompleted: boolean, isUnlocked: boolean} }>({
+      query: ({ lectureId, lecture }) => ({
+        url: `/lectures/${lectureId}`,
+        method: 'PATCH',
+        body: lecture,
+      }),
+      invalidatesTags: ['Lecture'],
+    }),
   }),
 });
 
@@ -67,4 +84,5 @@ export const {
   useCreateLectureMutation,
   useUpdateLectureMutation,
   useDeleteLectureMutation,
+  useUpdateLectureStatusMutation
 } = lectureApi;

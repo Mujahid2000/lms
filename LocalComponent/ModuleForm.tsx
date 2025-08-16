@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateModuleMutation } from "@/Store/api/ModuleApi";
+import { useCreateModuleMutation } from "@/redux/features/module/module";
+
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 

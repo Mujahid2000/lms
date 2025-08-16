@@ -1,6 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { clearJwtToken } from '@/Store/state/SetJWT';
+
 
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Menu, X } from 'lucide-react';
 import { RootState } from '@/redux/store';
+import { logout } from '@/redux/features/auth/auth.slice';
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -23,9 +24,9 @@ useEffect(() =>{
 },[token])
 
 
-  const logout = () => {
+  const handleLogout = () => {
     try {
-      dispatch(clearJwtToken());
+      dispatch(logout());
       redirect('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -51,7 +52,7 @@ useEffect(() =>{
             {/* Desktop Navigation (visible on md: 768px and above) */}
             <nav className="hidden md:flex items-center gap-4">
               
-              <Button onClick={logout} variant="outline" className="hover:bg-gray-100">
+              <Button onClick={handleLogout} variant="outline" className="hover:bg-gray-100">
                 Sign Out
               </Button>
             </nav>

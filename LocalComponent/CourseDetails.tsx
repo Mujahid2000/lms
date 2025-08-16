@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Star, Clock, Users, BookOpen, Play, Download, Share2 } from "lucide-react"
 import { useEffect, useState } from "react"
+import Link from "next/link"
 
 // Mock course data - in real app this would come from props or API
 const courseData = {
@@ -233,6 +234,9 @@ export function CourseDetails({id}: {id: string}) {
                   <Button size="lg" className="w-full font-sans font-semibold">
                     Enroll Now
                   </Button>
+                  <Button size="lg" className="w-full font-sans font-semibold">
+                    <Link href={`/lecture/video/${id}`}>Lecture Page</Link>
+                    </Button>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="flex-1 bg-transparent">
                       <Share2 className="w-4 h-4 mr-2" />

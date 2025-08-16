@@ -1,6 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import Navbar from '@/Layout/Navbar';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -52,7 +53,10 @@ export default function CourseList() {
   }
 
   return (
+    <div>
+       <Navbar/>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+      
       {courses.length === 0 ? (
         <div className="col-span-full text-center py-12">
           <p className="text-gray-500 mb-4">No courses available</p>
@@ -88,6 +92,7 @@ export default function CourseList() {
           </Card>
         ))
       )}
+    </div>
     </div>
   );
 }
