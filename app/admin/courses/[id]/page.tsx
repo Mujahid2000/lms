@@ -205,7 +205,7 @@ export default function ModuleLectureManagement() {
     <Button
       size="sm"
       onClick={() => {
-        setIsEditMode(false);
+        setIsEditMode(true);
         setSelectedLecture(null);
       }}
     >
