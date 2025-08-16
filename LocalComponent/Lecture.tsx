@@ -3,7 +3,6 @@ import { Lecture } from "@/app/admin/courses/[id]/page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, Toaster } from "sonner";
 import { useEffect, useState } from "react";
@@ -19,24 +18,23 @@ type Inputs = {
 
 interface LectureFormProps {
   moduleId: string;
-  initialData?: Lecture; // Made optional to handle cases where initialData might be undefined
+  initialData?: Lecture;
   onSuccess?: () => void;
 }
 
 export default function LectureForm({ moduleId, initialData, onSuccess }: LectureFormProps) {
   const [createLecture] = useCreateLectureMutation();
-  const [updateLecture] = useUpdateLectureMutation(); // Remove moduleId from here; the hook doesn't accept arguments
+  const [updateLecture] = useUpdateLectureMutation();
   const [isFormVisible, setIsFormVisible] = useState(true);
   const [editMode, setEditMode] = useState<boolean>(false);
 
-  // Set default values for the form based on initialData if editMode is true
   const { register, handleSubmit, reset } = useForm<Inputs>({
     defaultValues: {
       moduleId: initialData?.moduleId || moduleId,
       title: initialData?.title || "",
       duration: initialData?.duration || 0,
       videoUrl: initialData?.videoUrl || "",
-      notes: undefined, // File inputs can't have default values
+      notes: undefined,
     },
   });
 
@@ -50,7 +48,6 @@ export default function LectureForm({ moduleId, initialData, onSuccess }: Lectur
         videoUrl: initialData.videoUrl || "",
         notes: undefined,
       });
-      onSuccess?.();
     } else {
       setEditMode(false);
       reset({
@@ -60,44 +57,41 @@ export default function LectureForm({ moduleId, initialData, onSuccess }: Lectur
         videoUrl: "",
         notes: undefined,
       });
-      onSuccess?.();
     }
+    // Removed onSuccess?.() from here to prevent dialog closing on mount
   }, [initialData, reset, moduleId]);
 
-const onSubmit: SubmitHandler<Inputs> = async (data) => {
-  const formData = new FormData();
-  formData.append("moduleId", moduleId);
-  formData.append("title", data.title);
-  formData.append("duration", String(data.duration));
-  formData.append("videoUrl", data.videoUrl);
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    const formData = new FormData();
+    formData.append("moduleId", moduleId);
+    formData.append("title", data.title);
+    formData.append("duration", String(data.duration));
+    formData.append("videoUrl", data.videoUrl);
 
-  if (data.notes && data.notes.length > 0) {
-    for (let i = 0; i < data.notes.length; i++) {
-      formData.append("notes", data.notes[i]);
+    if (data.notes && data.notes.length > 0) {
+      for (let i = 0; i < data.notes.length; i++) {
+        formData.append("notes", data.notes[i]);
+      }
     }
-  }
 
-  try {
-    let response;
-    if (editMode && initialData?._id) {
-      // Update lecture with the correct lectureId
-      response = await updateLecture({ lectureId: initialData._id, lecture: formData }).unwrap();
-      // console.log("Lecture updated:", response);
-      toast.success("Lecture updated successfully!");
-    } else {
-      // Create new lecture
-      response = await createLecture(formData).unwrap();
-      // console.log("Lecture created:", response);
-      toast.success("Lecture created successfully!");
+    try {
+      let response;
+      if (editMode && initialData?._id) {
+        response = await updateLecture({ lectureId: initialData._id, lecture: formData }).unwrap();
+        toast.success("Lecture updated successfully!");
+      } else {
+        response = await createLecture(formData).unwrap();
+        toast.success("Lecture created successfully!");
+      }
+      onSuccess?.(); // Close dialog on successful submission
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error(`Failed to ${editMode ? "update" : "create"} lecture. Please try again.`);
     }
-    onSuccess?.(); // Hide the form on success
-  } catch (err) {
-    console.error("Error:", err);
-    toast.error(`Failed to ${editMode ? "update" : "create"} lecture. Please try again.`);
-  }
-};
+  };
+
   if (!isFormVisible) {
-    return null; // Render nothing when the form is hidden
+    return null;
   }
 
   return (

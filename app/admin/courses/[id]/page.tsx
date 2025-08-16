@@ -205,7 +205,7 @@ export default function ModuleLectureManagement() {
     <Button
       size="sm"
       onClick={() => {
-        setIsEditMode(true);
+        setIsEditMode(false); // Set to false for creating a new lecture
         setSelectedLecture(null);
       }}
     >
@@ -220,7 +220,7 @@ export default function ModuleLectureManagement() {
       </DialogDescription>
     </DialogHeader>
     <LectureForm
-      onSuccess={() => setIsLectureDialogOpen(false)} // Close dialog on success
+      onSuccess={() => setIsLectureDialogOpen(false)}
       initialData={selectedLecture ?? undefined}
       moduleId={module._id}
     />
