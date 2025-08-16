@@ -109,30 +109,31 @@ export default function ModuleLectureManagement() {
             <h2 className="text-3xl font-bold">Course Content</h2>
             <p className="text-gray-600">Manage your course modules and lectures</p>
           </div>
-          <Dialog open={isModuleDialogOpen} onOpenChange={setIsModuleDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => {
-                  setIsEditMode(false);
-                  setSelectedModule(null);
-                }}
-              >
-                Add Module
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{isEditMode ? "Edit Module" : "Create New Module"}</DialogTitle>
-                <DialogDescription>
-                  {isEditMode ? "Update module information" : "Add a new module to your course"}
-                </DialogDescription>
-              </DialogHeader>
-              <ModuleForm onSuccess={() => {
-                setIsEditMode(false);
-                setSelectedModule(null);
-              }}  courseId={id} />
-            </DialogContent>
-          </Dialog>
+        
+<Dialog open={isModuleDialogOpen} onOpenChange={setIsModuleDialogOpen}>
+  <DialogTrigger asChild>
+    <Button
+      onClick={() => {
+        setIsEditMode(false);
+        setSelectedModule(null);
+      }}
+    >
+      Add Module
+    </Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>{isEditMode ? "Edit Module" : "Create New Module"}</DialogTitle>
+      <DialogDescription>
+        {isEditMode ? "Update module information" : "Add a new module to your course"}
+      </DialogDescription>
+    </DialogHeader>
+    <ModuleForm
+      onSuccess={() => setIsModuleDialogOpen(false)} // Close dialog on success
+      courseId={id}
+    />
+  </DialogContent>
+</Dialog>
         </div>
 
         {/* Course Statistics */}
@@ -199,33 +200,31 @@ export default function ModuleLectureManagement() {
                         <div className="flex justify-between items-center">
                           <h4 className="font-medium">Lectures</h4>
                           <Dialog open={isLectureDialogOpen} onOpenChange={setIsLectureDialogOpen}>
-                            <DialogTrigger asChild>
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setIsEditMode(false);
-                                  setSelectedLecture(null);
-                                }}
-                              >
-                                Add Lecture
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl">
-                              <DialogHeader>
-                                <DialogTitle>{isEditMode ? "Edit Lecture" : "Create New Lecture"}</DialogTitle>
-                                <DialogDescription>
-                                  {isEditMode ? "Update lecture information" : "Add a new lecture to this module"}
-                                </DialogDescription>
-                              </DialogHeader>
-                              {/* Lecture form */}
-                              <LectureForm
-                              onSuccess={() => {
-                                setIsEditMode(false);
-                                  setSelectedLecture(null);
-                              }}
-                              initialData={selectedLecture ?? undefined} moduleId={module._id} />
-                            </DialogContent>
-                          </Dialog>
+  <DialogTrigger asChild>
+    <Button
+      size="sm"
+      onClick={() => {
+        setIsEditMode(false);
+        setSelectedLecture(null);
+      }}
+    >
+      Add Lecture
+    </Button>
+  </DialogTrigger>
+  <DialogContent className="max-w-2xl">
+    <DialogHeader>
+      <DialogTitle>{isEditMode ? "Edit Lecture" : "Create New Lecture"}</DialogTitle>
+      <DialogDescription>
+        {isEditMode ? "Update lecture information" : "Add a new lecture to this module"}
+      </DialogDescription>
+    </DialogHeader>
+    <LectureForm
+      onSuccess={() => setIsLectureDialogOpen(false)} // Close dialog on success
+      initialData={selectedLecture ?? undefined}
+      moduleId={module._id}
+    />
+  </DialogContent>
+</Dialog>
                         </div>
 
                         {module.lectures.length === 0 ? (

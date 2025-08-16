@@ -8,6 +8,7 @@ import { useCreateModuleMutation } from "@/redux/features/module/module";
 
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast, Toaster } from "sonner";
 
 interface Module {
   id: string;
@@ -38,10 +39,12 @@ export default function ModuleForm({  courseId , onSuccess}: {courseId: string; 
       const response = await createModule({ ...data,  courseId });
       console.log({...data, courseId})
       setIsSubmitting(true)
+      toast.success("Module created successfully!"); // Add toast for user feedback
       reset(data); // Reset form with submitted values to mark as pristine
-      onSuccess?.();
+    onSuccess?.(); // Call onSuccess to close the dialog
     } catch (error) {
       console.error("Failed to submit module:", error);
+      toast.error("Failed to create module. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -105,6 +108,7 @@ export default function ModuleForm({  courseId , onSuccess}: {courseId: string; 
           {isSubmitting ? "Submitting..." : "Create Module"}
         </Button>
       </div>
+      <Toaster/>
     </form>
   );
 }

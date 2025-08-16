@@ -82,15 +82,15 @@ const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (editMode && initialData?._id) {
       // Update lecture with the correct lectureId
       response = await updateLecture({ lectureId: initialData._id, lecture: formData }).unwrap();
-      console.log("Lecture updated:", response);
+      // console.log("Lecture updated:", response);
       toast.success("Lecture updated successfully!");
     } else {
       // Create new lecture
       response = await createLecture(formData).unwrap();
-      console.log("Lecture created:", response);
+      // console.log("Lecture created:", response);
       toast.success("Lecture created successfully!");
     }
-    setIsFormVisible(false); // Hide the form on success
+    onSuccess?.(); // Hide the form on success
   } catch (err) {
     console.error("Error:", err);
     toast.error(`Failed to ${editMode ? "update" : "create"} lecture. Please try again.`);
