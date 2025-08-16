@@ -79,10 +79,10 @@ export default function Home() {
           
         }
         toast.success("Login successful!");
-        if(response.token  && response?.user?.role === "admin") {
-        router.push("/admin/courses");
+        if(response.token  && response?.user?.role === "user") {
+          router.push("/user-dashboard");
         } else{
-         router.push("/user-dashboard");
+          router.push("/admin/courses");
         }
       } catch (error) {
         console.error("Login failed:", error);
