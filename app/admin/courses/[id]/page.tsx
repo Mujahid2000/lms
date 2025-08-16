@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ModuleForm from "@/LocalComponent/ModuleForm";
 import LectureForm from "@/LocalComponent/Lecture";
 import { useParams } from "next/navigation";
@@ -65,6 +65,13 @@ export default function ModuleLectureManagement() {
   const { data: modules = [], isLoading: modulesLoading, refetch } = useGetModuleByIdQuery(id);
   const [deleteLecture, { isLoading: isDeleting, isSuccess, isError, error }] = useDeleteLectureMutation();
   const token = useSelector((state: RootState) => state.lmsAuth.token);
+  const [refetchCall, setRefetch] = useState(false)
+
+  useEffect(() =>{
+    if(refetchCall === true){
+      refetch
+    }
+  },[refetch, refetchCall])
 
   if (modulesLoading) {
     return <div className="flex justify-center items-center">
@@ -223,6 +230,7 @@ export default function ModuleLectureManagement() {
       onSuccess={() => setIsLectureDialogOpen(false)}
       initialData={selectedLecture ?? undefined}
       moduleId={module._id}
+      refe={()=>setRefetch(true)}
     />
   </DialogContent>
 </Dialog>

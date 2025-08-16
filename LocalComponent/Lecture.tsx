@@ -20,9 +20,10 @@ interface LectureFormProps {
   moduleId: string;
   initialData?: Lecture;
   onSuccess?: () => void;
+  refe?: () => void;
 }
 
-export default function LectureForm({ moduleId, initialData, onSuccess }: LectureFormProps) {
+export default function LectureForm({ moduleId, initialData, onSuccess, refe }: LectureFormProps) {
   const [createLecture] = useCreateLectureMutation();
   const [updateLecture] = useUpdateLectureMutation();
   const [isFormVisible, setIsFormVisible] = useState(true);
@@ -84,6 +85,7 @@ export default function LectureForm({ moduleId, initialData, onSuccess }: Lectur
         toast.success("Lecture created successfully!");
       }
       onSuccess?.(); // Close dialog on successful submission
+      refe?.()
     } catch (err) {
       console.error("Error:", err);
       toast.error(`Failed to ${editMode ? "update" : "create"} lecture. Please try again.`);
