@@ -74,7 +74,7 @@ export default function Home() {
       } else{
         redirect("/user-dashboard")
       }
-    }, [token]);
+    }, [token, role]);
 
 
 
