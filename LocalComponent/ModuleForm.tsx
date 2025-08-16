@@ -23,7 +23,7 @@ interface FormInputs {
   coursesId: string
 }
 
-export default function ModuleForm({  courseId }: {courseId: string;}) {
+export default function ModuleForm({  courseId , onSuccess}: {courseId: string; onSuccess?: () => void;}) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createModule, {isLoading, isError}] = useCreateModuleMutation()
   const {register, handleSubmit, formState: { errors }, reset,} = useForm<FormInputs>({
@@ -39,6 +39,7 @@ export default function ModuleForm({  courseId }: {courseId: string;}) {
       console.log({...data, courseId})
       setIsSubmitting(true)
       reset(data); // Reset form with submitted values to mark as pristine
+      onSuccess?.();
     } catch (error) {
       console.error("Failed to submit module:", error);
     } finally {

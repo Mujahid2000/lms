@@ -22,6 +22,7 @@ import Navbar from "@/Layout/Navbar";
 import { useGetModuleByIdQuery } from "@/redux/features/module/module";
 import { useDeleteLectureMutation } from "@/redux/features/lecture/lecture";
 import { RootState } from "@/redux/store";
+import { Course } from "@/redux/features/course/course";
 
 
 export interface Lecture {
@@ -57,6 +58,8 @@ export default function ModuleLectureManagement() {
   const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
   const [isLectureDialogOpen, setIsLectureDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const params = useParams();
   const id = params.id as string;
   const { data: modules = [], isLoading: modulesLoading } = useGetModuleByIdQuery(id);
@@ -124,7 +127,10 @@ export default function ModuleLectureManagement() {
                   {isEditMode ? "Update module information" : "Add a new module to your course"}
                 </DialogDescription>
               </DialogHeader>
-              <ModuleForm courseId={id} />
+              <ModuleForm onSuccess={() => {
+                setIsEditMode(false);
+                setSelectedModule(null);
+              }}  courseId={id} />
             </DialogContent>
           </Dialog>
         </div>
@@ -212,7 +218,12 @@ export default function ModuleLectureManagement() {
                                 </DialogDescription>
                               </DialogHeader>
                               {/* Lecture form */}
-                              <LectureForm initialData={selectedLecture ?? undefined} moduleId={module._id} />
+                              <LectureForm
+                              onSuccess={() => {
+                                setIsEditMode(false);
+                                  setSelectedLecture(null);
+                              }}
+                              initialData={selectedLecture ?? undefined} moduleId={module._id} />
                             </DialogContent>
                           </Dialog>
                         </div>
