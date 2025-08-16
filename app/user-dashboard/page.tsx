@@ -24,7 +24,7 @@ export default function CourseList() {
   const role = useSelector((state: RootState) => state.lmsAuth.user?.role)
 
     useEffect(() => {
-        if(token) {
+        if(token && role === 'admin') {
           redirect("/admin/courses");
         } else{
           redirect("/user-dashboard")
