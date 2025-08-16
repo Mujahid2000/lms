@@ -160,7 +160,7 @@ export function CourseManagement() {
                 </Link> */}
                 <Link
                   href={`/admin/courses/${course._id}`}
-                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  className="text-blue-600 underline hover:text-blue-800 font-medium text-sm"
                 >
                   Manage Modules & Lectures
                 </Link>
